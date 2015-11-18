@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.*;
 import java.nio.channels.*;
 
+
 public class Filedivide {
 	public void storeByteArrayToFile(byte[] bytesToSave, String path) throws IOException {
 	    FileOutputStream fOut = new FileOutputStream(path);
@@ -21,8 +22,7 @@ public class Filedivide {
 	        fOut.close();
 	    }
 	}
-	public void filedivide(String filename) throws IOException
-	{
+	public void filedivide(String filename) throws IOException {
 		File f = new File(filename);
 		FileInputStream is = new FileInputStream(f);
 		FileChannel fc = is.getChannel();
@@ -36,9 +36,13 @@ public class Filedivide {
 	        //save the part of the file into a chunk
 	        bytes = bb.array();
 	        storeByteArrayToFile(bytes, "chunk." + chunkCount);//mRecordingFile is the (String)path to file
-	        chunkCount++;
+
+			System.out.println("CHUNK "+ chunkCount+ " created!");
+			chunkCount++;
 	        bb.clear();
-	    }
+			//Thread.sleep(2000);
+
+		}
 	    is.close();
 		
 		/*int line;

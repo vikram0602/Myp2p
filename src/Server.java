@@ -41,7 +41,7 @@ public class Server
 	
 			Filedivide ob= new Filedivide();
 		try {
-			ob.filedivide("file.pdf");
+			ob.filedivide("file.txt");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

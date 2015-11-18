@@ -1,20 +1,15 @@
-package client1;
-
-
+package client2;
 
 import java.net.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-//import java.util.*;
+/**
+ * Created by dell 2 on 17-Nov-15.
+ */
 
-
-
- 
-// A client for our Multithreaded SocketServer. 
-public class Client1
-{ 
-	private static Socket sock;
+// A client for our Multithreaded SocketServer.
+public class Client2
+{
+    private static Socket sock;
     private static String fileName;
     private static BufferedReader bufferReader;
     private static PrintStream os;
@@ -42,7 +37,7 @@ public class Client1
                     System.err.print("File Name: ");
                     fileName = bufferReader.readLine();
                     os.println(fileName);
-                    os.println("Client 1");
+                    os.println("Client 2");
                     receiveFile(fileName);
 
                 } else if (s.equals("exit")) {
@@ -61,7 +56,7 @@ public class Client1
 
     public static String selectAction() throws IOException {
         System.out.println("");
-       // System.out.println("send - Send File.");
+        // System.out.println("send - Send File.");
         System.out.println("get - Get File.");
         System.out.println("exit - Exit.");
         System.out.print("\nSelect one Option: ");
@@ -108,12 +103,12 @@ public class Client1
 
             fileName = clientData.readUTF();
             OutputStream output = new FileOutputStream(
-                    ("src/client1/received_from_server_" + fileName));
+                    ("src/client2/received_from_server_" + fileName));
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0
                     && (bytesRead = clientData.read(buffer, 0,
-                            (int) Math.min(buffer.length, size))) != -1) {
+                    (int) Math.min(buffer.length, size))) != -1) {
                 output.write(buffer, 0, bytesRead);
                 size -= bytesRead;
             }
@@ -121,12 +116,12 @@ public class Client1
 
             System.out.println("File " + fileName + " received from Server.");
         } catch (IOException ex) {
-          //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
-                 //   null, ex);
-        	//sysout
-     System.out.println("ERRORRR!");
-        	
+            //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
+            //   null, ex);
+            //sysout
+            System.out.println("ERRORRR!");
+
         }
     }
-    
+
 }

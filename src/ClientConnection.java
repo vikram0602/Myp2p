@@ -40,9 +40,10 @@ public class ClientConnection implements Runnable {
                         receiveFile();
 
                     } else if (clientSelection.equals("get")) {
-                        String outGoingFileName;
+                        String outGoingFileName, clientName;
                         while ((outGoingFileName = in.readLine()) != null) {
-                            sendFile(outGoingFileName);
+                            clientName=in.readLine();
+                            sendFile(outGoingFileName,clientName);
                         }
 
                     } else {
@@ -58,7 +59,7 @@ public class ClientConnection implements Runnable {
     }
 
     public void receiveFile() {
-        try {
+  /*      try {
             int bytesRead;
 
             DataInputStream clientData = new DataInputStream(
@@ -82,10 +83,10 @@ public class ClientConnection implements Runnable {
 
         } catch (IOException ex) {
             System.err.println("Error." + ex);
-        }
+        }*/
     }
 
-    public void sendFile(String fileName) {
+    public void sendFile(String fileName, String clientName) {
         try {
 
             File myFile = new File(fileName);
@@ -105,7 +106,7 @@ public class ClientConnection implements Runnable {
             dos.write(mybytearray, 0, mybytearray.length);
             dos.flush();
 
-            System.out.println("File " + fileName + " send to client.");
+            System.out.println("File " + fileName + " send to "+clientName);
 
         } catch (Exception e) {
             System.err.println("Error! " + e);
