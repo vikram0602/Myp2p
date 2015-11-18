@@ -1,4 +1,4 @@
-package client1;
+package client5;
 
 
 
@@ -10,19 +10,18 @@ import java.nio.channels.*;
 
 
 
- 
-// A client for our Multithreaded SocketServer. 
-public class Client1
-{ 
-	private static Socket sock;
+
+// A client for our Multithreaded SocketServer.
+public class Client5
+{
+    private static Socket sock;
     private static String fileName;
     private static BufferedReader bufferReader;
     private static PrintStream os;
     public static int chunkcount;
-    public static int chunkcheck[];
 
     public static void main(String[] args) throws IOException {
-         readNoChunk();
+        readNoChunk();
         int i;
         try {
             sock = new Socket("localhost", 4444);
@@ -43,12 +42,9 @@ public class Client1
                 if (s.equals("1")) {
                     os.println("get");
                     //os.println(fileName);
-                    os.println("Client 1");
-                    for(i=1;i<=chunkcount;i+=5)
-                    {
+                    os.println("Client 5");
+                    for(i=5;i<=chunkcount;i+=5)
                         receiveFile(fileName);
-                        chunkcheck[i-1]=1;
-                    }
 
                 } else if (s.equals("2")) {
                     done = true;
@@ -69,7 +65,6 @@ public class Client1
         System.out.println("Reading No. of chunks");
         //Name of the file
         String fileName="chunkcount.txt";
-        int i;
         try{
 
             FileReader inputFile = new FileReader(fileName);
@@ -78,10 +73,7 @@ public class Client1
 
             line = bufferReader.readLine();
             chunkcount=Integer.parseInt(line);
-                System.out.println(chunkcount);
-            chunkcheck=new int[chunkcount];
-            for(i=0;i<chunkcheck.length;i++)
-                chunkcheck[i]=0;
+            System.out.println(chunkcount);
 
             bufferReader.close();
         }catch(Exception e){
@@ -93,7 +85,7 @@ public class Client1
 
     public static String selectAction() throws IOException {
         System.out.println("");
-       // System.out.println("send - Send File.");
+        // System.out.println("send - Send File.");
         System.out.println("1 - Get File.");
         System.out.println("2 - Exit.");
         System.out.print("\nSelect one Option: ");
@@ -140,12 +132,12 @@ public class Client1
 
             fileName = clientData.readUTF();
             OutputStream output = new FileOutputStream(
-                    ("src/client1/received_from_server_" + fileName));
+                    ("src/client5/received_from_server_" + fileName));
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0
                     && (bytesRead = clientData.read(buffer, 0,
-                            (int) Math.min(buffer.length, size))) != -1) {
+                    (int) Math.min(buffer.length, size))) != -1) {
                 output.write(buffer, 0, bytesRead);
                 size -= bytesRead;
             }
@@ -153,18 +145,12 @@ public class Client1
 
             System.out.println("File " + fileName + " received from Server.");
         } catch (IOException ex) {
-          //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
-                 //   null, ex);
-        	//sysout
-     System.out.println("ERRORRR!");
-        	
+            //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
+            //   null, ex);
+            //sysout
+            System.out.println("ERRORRR!");
+
         }
     }
 
-    /*
-    public void actServer()
-    {
-
-    }*/
-    
 }

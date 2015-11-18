@@ -11,7 +11,7 @@ public class Server
 {
 	 	public static ServerSocket serverSocket;
 	    public static Socket clientSocket = null;
-	
+		public static int count;
 	public void connectc()
 	{
 		 try {
@@ -27,7 +27,7 @@ public class Server
 	                clientSocket = serverSocket.accept();
 	                System.out.println("Conection Accept : " + clientSocket);
 
-	                Thread t = new Thread(new ClientConnection(clientSocket));
+	                Thread t = new Thread(new ClientConnection(clientSocket,count));
 
 	                t.start();
 
@@ -39,12 +39,15 @@ public class Server
 	
 	public static void main(String [] args){
 	
-			Filedivide ob= new Filedivide();
+
+		Filedivide ob= new Filedivide();
 		try {
-			ob.filedivide("file.txt");
+		count=	ob.filedivide("file.pdf");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		ob.fileChunk(count);
+		System.out.println("No. of Chunks= "+count);
 		Server obj= new Server();
 		obj.connectc();
 	}

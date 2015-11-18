@@ -1,19 +1,19 @@
+package client1;
+
+/**
+ * Created by dell 2 on 18-Nov-15.
+ */
 import java.net.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import filessplit.*;
 
 
-public class ClientConnection implements Runnable {
+public class Client1Connection implements Runnable {
 
     private Socket clientSocket;
     private BufferedReader in = null;
     public  int count;
 
-    public ClientConnection(Socket client,int a)
+    public Client1Connection(Socket client,int a)
     {
         this.clientSocket = client;
         count=a;
@@ -46,8 +46,8 @@ public class ClientConnection implements Runnable {
                     } else if (clientSelection.equals("get")) {
                         String outGoingFileName, clientName;
                         while ((clientName=in.readLine()) != null) {
-                            sendClient(clientName);
-                          //  sendFile(outGoingFileName,clientName);
+                           // sendClient(clientName);
+                            //  sendFile(outGoingFileName,clientName);
                         }
 
                     } else {
@@ -90,53 +90,7 @@ public class ClientConnection implements Runnable {
         }*/
     }
 
-    public void sendClient(String clientName)
-    {
-        int i,j;
-        String temp;
-        //System.out.println("asdasd="+clientName);
-        if(clientName.equalsIgnoreCase("Client 1"))
-        {
-            for(i=1;i<=count;i+=5)
-            {
-                temp="chunk."+i;
-                //System.out.println("asdasd="+temp);
-                sendFile(temp,clientName);
-            }
-        }
-        else if(clientName.equalsIgnoreCase("Client 2"))
-        {
-            for(i=2;i<=count;i+=5)
-            {
-                temp="chunk."+i;
-                sendFile(temp,clientName);
-            }
-        }
-        else if(clientName.equalsIgnoreCase("Client 3"))
-        {
-            for(i=3;i<=count;i+=5)
-            {
-                temp="chunk."+i;
-                sendFile(temp,clientName);
-            }
-        }
-        else if(clientName.equalsIgnoreCase("Client 4"))
-        {
-            for(i=4;i<=count;i+=5)
-            {
-                temp="chunk."+i;
-                sendFile(temp,clientName);
-            }
-        }
-        else if(clientName.equalsIgnoreCase("Client 5"))
-        {
-            for(i=5;i<=count;i+=5)
-            {
-                temp="chunk."+i;
-                sendFile(temp,clientName);
-            }
-        }
-    }
+
     public void sendFile(String fileName, String clientName) {
         try {
 

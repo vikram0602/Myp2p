@@ -1,9 +1,6 @@
 package filessplit;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 
@@ -22,7 +19,7 @@ public class Filedivide {
 	        fOut.close();
 	    }
 	}
-	public void filedivide(String filename) throws IOException {
+	public int  filedivide(String filename) throws IOException {
 		File f = new File(filename);
 		FileInputStream is = new FileInputStream(f);
 		FileChannel fc = is.getChannel();
@@ -44,7 +41,7 @@ public class Filedivide {
 
 		}
 	    is.close();
-		
+		chunkCount--;
 		/*int line;
 		File f = new File(filename);
 	      BufferedInputStream bis = new BufferedInputStream( new FileInputStream(f));
@@ -95,7 +92,21 @@ public class Filedivide {
 		      bis1.close();
      	 }   
 	   buffOut1.close();*/
+
+		return chunkCount;
     }
-		
+	public void fileChunk(int a)
+	{
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter("chunkcount.txt", "UTF-8");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		writer.println(a);
+		writer.close();
+	}
 
 }

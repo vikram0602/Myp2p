@@ -18,9 +18,11 @@ public class Client3
     private static String fileName;
     private static BufferedReader bufferReader;
     private static PrintStream os;
-
+    public static int chunkcount;
 
     public static void main(String[] args) throws IOException {
+        readNoChunk();
+        int i;
         try {
             sock = new Socket("localhost", 4444);
             bufferReader = new BufferedReader(new InputStreamReader(System.in));
@@ -37,15 +39,14 @@ public class Client3
             try {
 
                 String s = selectAction();
-                if (s.equals("get")) {
+                if (s.equals("1")) {
                     os.println("get");
-                    System.err.print("File Name: ");
-                    fileName = bufferReader.readLine();
-                    os.println(fileName);
+                    //os.println(fileName);
                     os.println("Client 3");
-                    receiveFile(fileName);
+                    for(i=3;i<=chunkcount;i+=5)
+                        receiveFile(fileName);
 
-                } else if (s.equals("exit")) {
+                } else if (s.equals("2")) {
                     done = true;
                     os.println("exit");
                     System.out.println("Connection closed");
@@ -59,11 +60,34 @@ public class Client3
         sock.close();
     }
 
+    public static void readNoChunk()
+    {
+        System.out.println("Reading No. of chunks");
+        //Name of the file
+        String fileName="chunkcount.txt";
+        try{
+
+            FileReader inputFile = new FileReader(fileName);
+            BufferedReader bufferReader = new BufferedReader(inputFile);
+            String line;
+
+            line = bufferReader.readLine();
+            chunkcount=Integer.parseInt(line);
+            System.out.println(chunkcount);
+
+            bufferReader.close();
+        }catch(Exception e){
+            System.out.println("Error while reading file line by line:" + e.getMessage());
+        }
+
+    }
+
+
     public static String selectAction() throws IOException {
         System.out.println("");
         // System.out.println("send - Send File.");
-        System.out.println("get - Get File.");
-        System.out.println("exit - Exit.");
+        System.out.println("1 - Get File.");
+        System.out.println("2 - Exit.");
         System.out.print("\nSelect one Option: ");
 
         return bufferReader.readLine();
