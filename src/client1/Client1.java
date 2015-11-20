@@ -6,6 +6,7 @@ import java.net.*;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
+import java.util.ArrayList;
 //import java.util.*;
 
 
@@ -14,25 +15,29 @@ import java.nio.channels.*;
 // A client for our Multithreaded SocketServer. 
 public class Client1
 { 
-	private static Socket sock;
+	private static Socket socki;
+    private static Socket clidownload;
     private static String fileName;
     private static BufferedReader bufferReader;
     private static PrintStream os;
     public static int chunkcount;
     public static int chunkcheck[];
+    public static ServerSocket client1Socket;
+    public static Socket clientSocket = null;
+    public static ArrayList<String> mylist ;
 
     public static void main(String[] args) throws IOException {
          readNoChunk();
         int i;
         try {
-            sock = new Socket("localhost", 4444);
+            socki = new Socket("localhost", 4444);
             bufferReader = new BufferedReader(new InputStreamReader(System.in));
         } catch (Exception e) {
             System.err.println("Error - Try again.");
             System.exit(1);
         }
 
-        os = new PrintStream(sock.getOutputStream());
+        os = new PrintStream(socki.getOutputStream());
 
         boolean done = false;
 
@@ -46,10 +51,12 @@ public class Client1
                     os.println("Client 1");
                     for(i=1;i<=chunkcount;i+=5)
                     {
-                        receiveFile(fileName);
+                        receiveFile(fileName,socki);
                         chunkcheck[i-1]=1;
+                        mylist.set(i-1,"1");
                     }
 
+                    break;
                 } else if (s.equals("2")) {
                     done = true;
                     os.println("exit");
@@ -60,12 +67,70 @@ public class Client1
                 System.err.println("Wrong command");
             }
         }
+        boolean test=false;
+        while (!test)
+        {
+            actuploader();
+            actdownloader();
 
-        sock.close();
+
+        }
+        socki.close();
     }
+
+    public static void actdownloader() throws IOException {
+        int i,j;
+        boolean flag=false;
+        while(true) {
+            try {
+                clidownload = new Socket("localhost", 4005);
+                bufferReader = new BufferedReader(new InputStreamReader(System.in));
+                Thread.sleep(2000);
+                os = new PrintStream(clidownload.getOutputStream());
+                    for(i=0;i<chunkcount;i++)
+                    {
+                        os.println("get");
+                    }
+            } catch (Exception e) {
+                System.out.println("Requesting Neighbor Client 5 to Connect in 2sec!");
+                // System.exit(1);
+            }
+            finally {
+               clidownload.close();
+            }
+            //os = new PrintStream(clidownload.getOutputStream());
+        }
+
+    }
+
+    public static void actuploader() throws IOException {
+        try {
+            client1Socket = new ServerSocket(4001);
+            System.out.println("Client 1 uploader started.");
+        } catch (Exception e) {
+            System.err.println("client 1 Port already in use.");
+            System.exit(1);
+        }
+        //long start = System.currentTimeMillis();
+
+            try {
+                clientSocket = client1Socket.accept();
+                System.out.println("Conection Accept : " + clientSocket);
+
+                Thread t = new Thread(new Client1Connection(clientSocket, chunkcount, chunkcheck,mylist));
+                //  System.out.println("hola");
+                t.start();
+
+            } catch (Exception e) {
+                System.err.println("Conection Error.");
+            }
+
+    }
+
 
     public static void readNoChunk()
     {
+        mylist=new ArrayList<String>();
         System.out.println("Reading No. of chunks");
         //Name of the file
         String fileName="chunkcount.txt";
@@ -82,6 +147,8 @@ public class Client1
             chunkcheck=new int[chunkcount];
             for(i=0;i<chunkcheck.length;i++)
                 chunkcheck[i]=0;
+            for(i=0;i<chunkcount;i++)
+                mylist.add(0,"0");
 
             bufferReader.close();
         }catch(Exception e){
@@ -101,37 +168,7 @@ public class Client1
         return bufferReader.readLine();
     }
 
-    /*public static void sendFile() {
-        try {
-            System.err.print("File Name: ");
-            fileName = bufferReader.readLine();
-
-            File myFile = new File(fileName);
-            byte[] mybytearray = new byte[(int) myFile.length()];
-
-            FileInputStream fis = new FileInputStream(myFile);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-
-            DataInputStream dis = new DataInputStream(bis);
-            dis.readFully(mybytearray, 0, mybytearray.length);
-
-            OutputStream os = sock.getOutputStream();
-
-            DataOutputStream dos = new DataOutputStream(os);
-            dos.writeUTF(myFile.getName());
-            dos.writeLong(mybytearray.length);
-            dos.write(mybytearray, 0, mybytearray.length);
-            dos.flush();
-
-
-            System.out.println("File " + fileName
-                    + " send to server.");
-        } catch (Exception e) {
-            System.err.println("ERROR! " + e);
-        }
-    }*/
-
-    public static void receiveFile(String fileName) {
+      public static void receiveFile(String fileName,Socket sock) {
         try {
             int bytesRead;
             InputStream in = sock.getInputStream();
@@ -140,7 +177,7 @@ public class Client1
 
             fileName = clientData.readUTF();
             OutputStream output = new FileOutputStream(
-                    ("src/client1/received_from_server_" + fileName));
+                    ("src/client1/" + fileName));
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0
@@ -161,10 +198,4 @@ public class Client1
         }
     }
 
-    /*
-    public void actServer()
-    {
-
-    }*/
-    
 }

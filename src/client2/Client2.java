@@ -2,11 +2,13 @@ package client2;
 
 
 
+import client1.Client1Connection;
+
 import java.net.*;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
-//import java.util.*;
+import java.util.ArrayList;
 
 
 
@@ -14,24 +16,32 @@ import java.nio.channels.*;
 // A client for our Multithreaded SocketServer.
 public class Client2
 {
-    private static Socket sock;
+    private static Socket socki;
     private static String fileName;
+    private static Socket clidownload;
     private static BufferedReader bufferReader;
     private static PrintStream os;
     public static int chunkcount;
+    public static int chunkcheck[];
+    public static ServerSocket client1Socket;
+    public static Socket clientSocket = null;
+    private static ObjectInputStream in;
+    public static ArrayList<String> xyz;
+
+
 
     public static void main(String[] args) throws IOException {
         readNoChunk();
         int i;
         try {
-            sock = new Socket("localhost", 4444);
+            socki = new Socket("localhost", 4444);
             bufferReader = new BufferedReader(new InputStreamReader(System.in));
         } catch (Exception e) {
             System.err.println("Error - Try again.");
             System.exit(1);
         }
 
-        os = new PrintStream(sock.getOutputStream());
+        os = new PrintStream(socki.getOutputStream());
 
         boolean done = false;
 
@@ -44,7 +54,11 @@ public class Client2
                     //os.println(fileName);
                     os.println("Client 2");
                     for(i=2;i<=chunkcount;i+=5)
-                        receiveFile(fileName);
+                    {
+                        receiveFile(fileName,socki);
+                        chunkcheck[i-1]=1;
+                    }
+                    break;
 
                 } else if (s.equals("2")) {
                     done = true;
@@ -56,12 +70,81 @@ public class Client2
                 System.err.println("Wrong command");
             }
         }
+        boolean test=false;
+        while (!test)
+        {
+            actdownloader();
+            actuploader();
+        }
+        socki.close();
+    }
 
-        sock.close();
+    public static void actdownloader() throws IOException {
+        int i,j;
+        //boolean flag=false;
+        while(true) {
+            try {
+                clidownload = new Socket("localhost", 4001);
+                bufferReader = new BufferedReader(new InputStreamReader(System.in));
+               // Thread.sleep(2000);
+                os = new PrintStream(clidownload.getOutputStream());
+                String temp;
+                in=  new ObjectInputStream(clidownload.getInputStream());
+
+                xyz= (ArrayList<String>)in.readObject();
+
+                for(i=0;i<xyz.size();i++)
+                {
+                    if(xyz.get(i).equalsIgnoreCase("1") && chunkcheck[i]==0) {
+                        j=i+1;
+                        temp="chunk."+Integer.toString(j);
+                        os.println(temp);
+                        System.out.println(temp);
+                        receiveFile(temp,clidownload);
+                    }
+                }
+                os.println("exit");
+            } catch (Exception e) {
+                System.out.println("Requesting Neighbor Client 3 to Connect in 2sec!");
+                // System.exit(1);
+            }
+            finally {
+                //  clidownload.close();
+            }
+            //os = new PrintStream(clidownload.getOutputStream());
+        }
+
+    }
+
+    public static void actuploader() throws IOException {
+        try {
+            client1Socket = new ServerSocket(4002);
+            System.out.println("Client 2 uploader started.");
+        } catch (Exception e) {
+            System.err.println("client 2 Port already in use.");
+            System.exit(1);
+        }
+        long start = System.currentTimeMillis();
+        long end = start +1000; // 60 seconds * 1000 ms/sec
+        System.out.println(end);
+        while(System.currentTimeMillis() < end) {
+            try {
+                clientSocket = client1Socket.accept();
+                System.out.println("Conection Accept : " + clientSocket);
+
+                Thread t = new Thread(new Client2Connection(clientSocket, chunkcount, chunkcheck));
+                //  System.out.println("hola");
+                t.start();
+
+            } catch (Exception e) {
+                System.err.println("Conection Error.");
+            }
+        }
     }
 
     public static void readNoChunk()
     {
+        int i;
         System.out.println("Reading No. of chunks");
         //Name of the file
         String fileName="chunkcount.txt";
@@ -74,6 +157,9 @@ public class Client2
             line = bufferReader.readLine();
             chunkcount=Integer.parseInt(line);
             System.out.println(chunkcount);
+            chunkcheck=new int[chunkcount];
+            for(i=0;i<chunkcheck.length;i++)
+                chunkcheck[i]=0;
 
             bufferReader.close();
         }catch(Exception e){
@@ -123,7 +209,7 @@ public class Client2
         }
     }*/
 
-    public static void receiveFile(String fileName) {
+    public static void receiveFile(String fileName,Socket sock) {
         try {
             int bytesRead;
             InputStream in = sock.getInputStream();
@@ -132,7 +218,7 @@ public class Client2
 
             fileName = clientData.readUTF();
             OutputStream output = new FileOutputStream(
-                    ("src/client2/received_from_server_" + fileName));
+                    ("src/client2/" + fileName));
             long size = clientData.readLong();
             byte[] buffer = new byte[1024];
             while (size > 0
@@ -143,7 +229,7 @@ public class Client2
             }
             output.flush();
 
-            System.out.println("File " + fileName + " received from Server.");
+            System.out.println("File " + fileName + " received.");
         } catch (IOException ex) {
             //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
             //   null, ex);
