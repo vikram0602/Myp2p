@@ -1,10 +1,8 @@
 package client2;
 
-/**
- * Created by dell 2 on 18-Nov-15.
- */
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
 
 
 public class Client2Connection implements Runnable {
@@ -12,63 +10,52 @@ public class Client2Connection implements Runnable {
     private Socket clientSocket;
     private BufferedReader in = null;
     public  int count,chunkcheck[];
+    public ArrayList<String> arr;
+    private ObjectOutputStream out;
 
-    public Client2Connection(Socket client,int a,int[] b)
+    public Client2Connection(Socket client, int a, int[] b, ArrayList<String> k)
     {
         this.clientSocket = client;
         count=a;
         chunkcheck =new int[a];
         chunkcheck=b;
+        arr=k;
 
     }
 
     //@Override
     public void run() {
-        boolean done = false;
+        //int i;
+        // boolean done = false;
         try{
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
+            out=new ObjectOutputStream(clientSocket.getOutputStream());
 
         }
-        catch(Exception e){}
-
-        String clientSelection;
-
-        while (!done) {
-            System.out.println("DONE!");
-            done=true;
-
+        catch(Exception e){
+            System.out.println("error in my connection");
         }
-    }
-
-    public void receiveFile() {
+        int chunk;
+        String filename,temp;
         try {
-            int bytesRead;
-
-            DataInputStream clientData = new DataInputStream(
-                    clientSocket.getInputStream());
-
-            String fileName = clientData.readUTF();
-            OutputStream output = new FileOutputStream(
-                    ("received_from_client_" + fileName));
-            long size = clientData.readLong();
-            byte[] buffer = new byte[1024];
-            while (size > 0
-                    && (bytesRead = clientData.read(buffer, 0,
-                    (int) Math.min(buffer.length, size))) != -1) {
-                output.write(buffer, 0, bytesRead);
-                size -= bytesRead;
+            out.writeObject(arr);
+            while(true)
+            {
+                temp=in.readLine();
+                if(temp.equalsIgnoreCase("exit"))
+                    break;
+                else
+                {
+                    sendFile(temp,"client 3");
+                }
             }
-            output.flush();
-            output.close();
-
-            System.out.println("File " + fileName + " received from client.");
-
-        } catch (IOException ex) {
-            System.err.println("Error." + ex);
+            System.out.println("DONE!");
+        }
+        catch (IOException ex) {
+            System.err.println("Erro--" + ex);
         }
     }
-
 
     public void sendFile(String fileName, String clientName) {
         try {

@@ -42,7 +42,7 @@ public class Server
 
 		Filedivide ob= new Filedivide();
 		try {
-		count=	ob.filedivide("file.pdf");
+		count=	ob.filedivide("file.txt");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

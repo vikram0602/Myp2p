@@ -27,6 +27,8 @@ public class Client1Connection implements Runnable {
     public void run() {
         //int i;
        // boolean done = false;
+
+
         try{
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
@@ -55,6 +57,7 @@ public class Client1Connection implements Runnable {
         catch (IOException ex) {
             System.err.println("Erro--" + ex);
         }
+
     }
 
     public void sendFile(String fileName, String clientName) {

@@ -27,6 +27,7 @@ public class Client2
     public static Socket clientSocket = null;
     private static ObjectInputStream in;
     public static ArrayList<String> xyz;
+    public static ArrayList<String> mylist ;
 
 
 
@@ -57,6 +58,7 @@ public class Client2
                     {
                         receiveFile(fileName,socki);
                         chunkcheck[i-1]=1;
+                        mylist.set(i-1,"1");
                     }
                     break;
 
@@ -85,6 +87,7 @@ public class Client2
         while(true) {
             try {
                 clidownload = new Socket("localhost", 4001);
+               // clidownload.setSoTimeout(5*1000);
                 bufferReader = new BufferedReader(new InputStreamReader(System.in));
                // Thread.sleep(2000);
                 os = new PrintStream(clidownload.getOutputStream());
@@ -100,16 +103,18 @@ public class Client2
                         temp="chunk."+Integer.toString(j);
                         os.println(temp);
                         System.out.println(temp);
+                        chunkcheck[i]=1;
+                        xyz.set(i,"1");
                         receiveFile(temp,clidownload);
                     }
                 }
-                os.println("exit");
+               os.println("exit");
             } catch (Exception e) {
-                System.out.println("Requesting Neighbor Client 3 to Connect in 2sec!");
+                System.out.println("Requesting Neighbor Client 1 to Connect in 2sec!");
                 // System.exit(1);
             }
             finally {
-                //  clidownload.close();
+                  clidownload.close();
             }
             //os = new PrintStream(clidownload.getOutputStream());
         }
@@ -132,7 +137,7 @@ public class Client2
                 clientSocket = client1Socket.accept();
                 System.out.println("Conection Accept : " + clientSocket);
 
-                Thread t = new Thread(new Client2Connection(clientSocket, chunkcount, chunkcheck));
+                Thread t = new Thread(new Client2Connection(clientSocket, chunkcount, chunkcheck,mylist));
                 //  System.out.println("hola");
                 t.start();
 
@@ -147,6 +152,7 @@ public class Client2
         int i;
         System.out.println("Reading No. of chunks");
         //Name of the file
+        mylist=new ArrayList<String>();
         String fileName="chunkcount.txt";
         try{
 
@@ -160,6 +166,8 @@ public class Client2
             chunkcheck=new int[chunkcount];
             for(i=0;i<chunkcheck.length;i++)
                 chunkcheck[i]=0;
+            for(i=0;i<chunkcount;i++)
+                mylist.add(i,"0");
 
             bufferReader.close();
         }catch(Exception e){
@@ -179,35 +187,6 @@ public class Client2
         return bufferReader.readLine();
     }
 
-    /*public static void sendFile() {
-        try {
-            System.err.print("File Name: ");
-            fileName = bufferReader.readLine();
-
-            File myFile = new File(fileName);
-            byte[] mybytearray = new byte[(int) myFile.length()];
-
-            FileInputStream fis = new FileInputStream(myFile);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-
-            DataInputStream dis = new DataInputStream(bis);
-            dis.readFully(mybytearray, 0, mybytearray.length);
-
-            OutputStream os = sock.getOutputStream();
-
-            DataOutputStream dos = new DataOutputStream(os);
-            dos.writeUTF(myFile.getName());
-            dos.writeLong(mybytearray.length);
-            dos.write(mybytearray, 0, mybytearray.length);
-            dos.flush();
-
-
-            System.out.println("File " + fileName
-                    + " send to server.");
-        } catch (Exception e) {
-            System.err.println("ERROR! " + e);
-        }
-    }*/
 
     public static void receiveFile(String fileName,Socket sock) {
         try {

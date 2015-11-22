@@ -23,8 +23,10 @@ public class Client1
     public static int chunkcount;
     public static int chunkcheck[];
     public static ServerSocket client1Socket;
+    private static ObjectInputStream in;
     public static Socket clientSocket = null;
     public static ArrayList<String> mylist ;
+    public static ArrayList<String> xyz;
 
     public static void main(String[] args) throws IOException {
          readNoChunk();
@@ -79,28 +81,41 @@ public class Client1
     }
 
     public static void actdownloader() throws IOException {
-        int i,j;
-        boolean flag=false;
-        while(true) {
+        int i, j;
+        //boolean flag=false;
+        while (true) {
             try {
                 clidownload = new Socket("localhost", 4005);
+                //clidownload.setSoTimeout(5*1000);
                 bufferReader = new BufferedReader(new InputStreamReader(System.in));
-                Thread.sleep(2000);
+                // Thread.sleep(2000);
                 os = new PrintStream(clidownload.getOutputStream());
-                    for(i=0;i<chunkcount;i++)
-                    {
-                        os.println("get");
+                String temp;
+                in = new ObjectInputStream(clidownload.getInputStream());
+
+                xyz = (ArrayList<String>) in.readObject();
+              //  System.out.println("XYZ SIZe="+xyz.size());
+
+                for (i = 0; i < xyz.size(); i++) {
+                    if (xyz.get(i).equalsIgnoreCase("1") && chunkcheck[i] == 0) {
+                        j = i + 1;
+                        temp = "chunk." + Integer.toString(j);
+                        os.println(temp);
+                        System.out.println(temp);
+                        chunkcheck[i] = 1;
+                        xyz.set(i, "1");
+                        receiveFile(temp, clidownload);
                     }
+                }
+                os.println("exit");
             } catch (Exception e) {
                 System.out.println("Requesting Neighbor Client 5 to Connect in 2sec!");
                 // System.exit(1);
-            }
-            finally {
-               clidownload.close();
+            } finally {
+                 // clidownload.close();
             }
             //os = new PrintStream(clidownload.getOutputStream());
         }
-
     }
 
     public static void actuploader() throws IOException {
@@ -148,7 +163,7 @@ public class Client1
             for(i=0;i<chunkcheck.length;i++)
                 chunkcheck[i]=0;
             for(i=0;i<chunkcount;i++)
-                mylist.add(0,"0");
+                mylist.add(i,"0");
 
             bufferReader.close();
         }catch(Exception e){
@@ -188,7 +203,7 @@ public class Client1
             }
             output.flush();
 
-            System.out.println("File " + fileName + " received from Server.");
+            System.out.println("File " + fileName + " received.");
         } catch (IOException ex) {
           //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
                  //   null, ex);
