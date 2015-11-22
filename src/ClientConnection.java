@@ -11,6 +11,7 @@ public class ClientConnection implements Runnable {
 
     private Socket clientSocket;
     private BufferedReader in = null;
+    private PrintStream out;
     public  int count;
 
     public ClientConnection(Socket client,int a)
@@ -26,9 +27,12 @@ public class ClientConnection implements Runnable {
         try{
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
+            out = new PrintStream(clientSocket.getOutputStream());
 
         }
-        catch(Exception e){}
+        catch(Exception e){
+            System.out.println("errooooooorrrr");
+        }
 
         String clientSelection;
 
@@ -46,6 +50,7 @@ public class ClientConnection implements Runnable {
                     } else if (clientSelection.equals("get")) {
                         String outGoingFileName, clientName;
                         while ((clientName=in.readLine()) != null) {
+                           out.println(count);
                             sendClient(clientName);
                           //  sendFile(outGoingFileName,clientName);
                         }

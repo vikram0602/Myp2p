@@ -29,17 +29,20 @@ public class Client5
     private static ObjectInputStream in;
 
     public static void main(String[] args) throws IOException {
-        readNoChunk();
+        BufferedReader br;
+
         int i;
         try {
             socki = new Socket("localhost", 4444);
             bufferReader = new BufferedReader(new InputStreamReader(System.in));
+
         } catch (Exception e) {
             System.err.println("Error - Try again.");
             System.exit(1);
         }
 
         os = new PrintStream(socki.getOutputStream());
+        br = new BufferedReader(new InputStreamReader(socki.getInputStream()));
 
         boolean done = false;
 
@@ -49,8 +52,10 @@ public class Client5
                 String s = selectAction();
                 if (s.equals("1")) {
                     os.println("get");
-                    //os.println(fileName);
                     os.println("Client 5");
+                    chunkcount= Integer.parseInt(br.readLine());
+                    readNoChunk();
+
                     for(i=5;i<=chunkcount;i+=5)
                     {
                         receiveFile(fileName,socki);
@@ -82,11 +87,12 @@ public class Client5
 
     public static void actdownloader() throws IOException {
         int i, j;
-        //boolean flag=false;
-        while (true) {
+        long start = System.currentTimeMillis();
+        long end = start + 5*1000; // 60 seconds * 1000 ms/sec
+        while (System.currentTimeMillis() < end) {
             try {
-                clidownload = new Socket("localhost", 4004);
-                //clidownload.setSoTimeout(5*1000);
+                clidownload = new Socket("localhost", 4002);
+                //clidownload.setSoTimeout(5000);
                 bufferReader = new BufferedReader(new InputStreamReader(System.in));
                 // Thread.sleep(2000);
                 os = new PrintStream(clidownload.getOutputStream());
@@ -102,7 +108,7 @@ public class Client5
                         os.println(temp);
                         System.out.println(temp);
                         chunkcheck[i] = 1;
-                        xyz.set(i, "1");
+                        mylist.set(i, "1");
                         receiveFile(temp, clidownload);
                     }
                 }
@@ -116,6 +122,9 @@ public class Client5
             //os = new PrintStream(clidownload.getOutputStream());
         }
     }
+
+
+
 
 
 
@@ -136,7 +145,7 @@ public class Client5
             Thread t = new Thread(new Client5Connection(clientSocket, chunkcount, chunkcheck,mylist));
             //  System.out.println("hola");
             t.start();
-
+            client1Socket.close();
         } catch (Exception e) {
             System.err.println("Conection Error.");
         }
@@ -151,15 +160,9 @@ public class Client5
         System.out.println("Reading No. of chunks");
         //Name of the file
         mylist=new ArrayList<String>();
-        String fileName="chunkcount.txt";
+
         try{
 
-            FileReader inputFile = new FileReader(fileName);
-            BufferedReader bufferReader = new BufferedReader(inputFile);
-            String line;
-
-            line = bufferReader.readLine();
-            chunkcount=Integer.parseInt(line);
             System.out.println(chunkcount);
 
             chunkcheck=new int[chunkcount];
