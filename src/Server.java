@@ -12,6 +12,7 @@ public class Server
 	 	public static ServerSocket serverSocket;
 	    public static Socket clientSocket = null;
 		public static int count;
+		public static String filename;
 	public void connectc()
 	{
 		 try {
@@ -27,7 +28,7 @@ public class Server
 	                clientSocket = serverSocket.accept();
 	                System.out.println("Conection Accept : " + clientSocket);
 
-	                Thread t = new Thread(new ClientConnection(clientSocket,count));
+	                Thread t = new Thread(new ClientConnection(clientSocket,count,filename));
 
 	                t.start();
 
@@ -37,12 +38,14 @@ public class Server
 	        }
 	}
 	
-	public static void main(String [] args){
-	
-
+	public static void main(String [] args) throws IOException {
+		BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Enter file name:");
+		filename=br.readLine();
 		Filedivide ob= new Filedivide();
 		try {
-		count=	ob.filedivide("file.txt");
+
+		count=	ob.filedivide(filename);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

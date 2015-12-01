@@ -2,17 +2,14 @@ package client5;
 
 
 
+import merge.MergerFiles;
+
 import java.net.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+
 import java.util.ArrayList;
 
-
-
-
-
-// A client for our Multithreaded SocketServer.
+// A client 5 for our Multithreaded SocketServer.
 public class Client5
 {
     private static Socket socki;
@@ -27,6 +24,8 @@ public class Client5
     public static ArrayList<String> mylist ;
     public static ArrayList<String> xyz;
     private static ObjectInputStream in;
+    public static String recievefilename;
+    public static int downloadedchunkcount=0;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br;
@@ -54,6 +53,8 @@ public class Client5
                     os.println("get");
                     os.println("Client 5");
                     chunkcount= Integer.parseInt(br.readLine());
+                    recievefilename=br.readLine();
+                    System.out.println("Received File Name:"+recievefilename);
                     readNoChunk();
 
                     for(i=5;i<=chunkcount;i+=5)
@@ -61,6 +62,7 @@ public class Client5
                         receiveFile(fileName,socki);
                         chunkcheck[i-1]=1;
                         mylist.set(i-1,"1");
+                        downloadedchunkcount++;
                     }
                     break;
 
@@ -80,8 +82,19 @@ public class Client5
 
             actuploader();
             actdownloader();
+            if(downloadedchunkcount==chunkcount)
+                merge_all();
+
+
         }
         socki.close();
+    }
+
+    public static void merge_all() throws IOException {
+        String obc="src/client5/"+recievefilename;
+        MergerFiles mer=new MergerFiles();
+        mer.file_merge(chunkcount,obc);
+
     }
 
 
@@ -91,7 +104,7 @@ public class Client5
         long end = start + 5*1000; // 60 seconds * 1000 ms/sec
         while (System.currentTimeMillis() < end) {
             try {
-                clidownload = new Socket("localhost", 4002);
+                clidownload = new Socket("localhost", 4004);
                 //clidownload.setSoTimeout(5000);
                 bufferReader = new BufferedReader(new InputStreamReader(System.in));
                 // Thread.sleep(2000);
@@ -110,23 +123,16 @@ public class Client5
                         chunkcheck[i] = 1;
                         mylist.set(i, "1");
                         receiveFile(temp, clidownload);
+                        downloadedchunkcount++;
                     }
                 }
                os.println("exit");
             } catch (Exception e) {
                 System.out.println("Requesting Neighbor Client 4 to Connect in 2sec!");
                 // System.exit(1);
-            } finally {
-                // clidownload.close();
             }
-            //os = new PrintStream(clidownload.getOutputStream());
         }
     }
-
-
-
-
-
 
     public static void actuploader() throws IOException {
         try {
@@ -213,9 +219,6 @@ public class Client5
 
             System.out.println("File " + fileName + " received.");
         } catch (IOException ex) {
-            //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
-            //   null, ex);
-            //sysout
             System.out.println("ERRORRR!");
 
         }

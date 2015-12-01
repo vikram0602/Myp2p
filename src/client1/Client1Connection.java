@@ -25,8 +25,6 @@ public class Client1Connection implements Runnable {
 
     //@Override
     public void run() {
-        //int i;
-       // boolean done = false;
 
 
         try{

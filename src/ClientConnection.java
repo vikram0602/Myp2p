@@ -1,11 +1,5 @@
 import java.net.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import filessplit.*;
-
 
 public class ClientConnection implements Runnable {
 
@@ -13,11 +7,13 @@ public class ClientConnection implements Runnable {
     private BufferedReader in = null;
     private PrintStream out;
     public  int count;
+    public static String recievefilename;
 
-    public ClientConnection(Socket client,int a)
+    public ClientConnection(Socket client,int a,String k)
     {
         this.clientSocket = client;
         count=a;
+        recievefilename=k;
 
     }
 
@@ -44,15 +40,12 @@ public class ClientConnection implements Runnable {
                 clientSelection = "";
 
                 while ((clientSelection = in.readLine()) != null) {
-                    if (clientSelection.equals("send")) {
-                        receiveFile();
-
-                    } else if (clientSelection.equals("get")) {
-                        String outGoingFileName, clientName;
+                    if (clientSelection.equals("get")) {
+                        String  clientName;
                         while ((clientName=in.readLine()) != null) {
                            out.println(count);
+                            out.println(recievefilename);
                             sendClient(clientName);
-                          //  sendFile(outGoingFileName,clientName);
                         }
 
                     } else {
@@ -67,45 +60,16 @@ public class ClientConnection implements Runnable {
         }
     }
 
-    public void receiveFile() {
-  /*      try {
-            int bytesRead;
-
-            DataInputStream clientData = new DataInputStream(
-                    clientSocket.getInputStream());
-
-            String fileName = clientData.readUTF();
-            OutputStream output = new FileOutputStream(
-                    ("received_from_client_" + fileName));
-            long size = clientData.readLong();
-            byte[] buffer = new byte[1024];
-            while (size > 0
-                    && (bytesRead = clientData.read(buffer, 0,
-                            (int) Math.min(buffer.length, size))) != -1) {
-                output.write(buffer, 0, bytesRead);
-                size -= bytesRead;
-            }
-            output.flush();
-            output.close();
-
-            System.out.println("File " + fileName + " received from client.");
-
-        } catch (IOException ex) {
-            System.err.println("Error." + ex);
-        }*/
-    }
 
     public void sendClient(String clientName)
     {
-        int i,j;
+        int i;
         String temp;
-        //System.out.println("asdasd="+clientName);
         if(clientName.equalsIgnoreCase("Client 1"))
         {
             for(i=1;i<=count;i+=5)
             {
                 temp="chunk."+i;
-                //System.out.println("asdasd="+temp);
                 sendFile(temp,clientName);
             }
         }

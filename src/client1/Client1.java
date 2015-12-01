@@ -1,18 +1,12 @@
 package client1;
-
+import merge.MergerFiles;
 
 
 import java.net.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 import java.util.ArrayList;
-//import java.util.*;
 
-
-
- 
-// A client for our Multithreaded SocketServer. 
+// A client 1 for our Multithreaded SocketServer.
 public class Client1
 { 
 	private static Socket socki;
@@ -27,6 +21,8 @@ public class Client1
     public static Socket clientSocket = null;
     public static ArrayList<String> mylist ;
     public static ArrayList<String> xyz;
+    public static String recievefilename;
+    public static int downloadedchunkcount=0;
 
     public static void main(String[] args) throws IOException {
 
@@ -55,12 +51,15 @@ public class Client1
                     //os.println(fileName);
                     os.println("Client 1");
                     chunkcount= Integer.parseInt(br.readLine());
+                    recievefilename=br.readLine();
+                    System.out.println("Received File Name:"+recievefilename);
                     readNoChunk();
                     for(i=1;i<=chunkcount;i+=5)
                     {
                         receiveFile(fileName,socki);
                         chunkcheck[i-1]=1;
                         mylist.set(i-1,"1");
+                        downloadedchunkcount++;
                     }
 
                     break;
@@ -78,23 +77,29 @@ public class Client1
         while (!test)
         {
             actuploader();
-//            clidownload = new Socket("localhost", 4005);
-            actdownloader();
+                actdownloader();
+            if(downloadedchunkcount==chunkcount)
+                merge_all();
 
 
         }
         socki.close();
     }
 
+    public static void merge_all() throws IOException {
+        String obc="src/client1/"+recievefilename;
+        MergerFiles mer=new MergerFiles();
+        mer.file_merge(chunkcount,obc);
+
+    }
+
     public static void actdownloader() throws IOException {
         int i, j;
         long start = System.currentTimeMillis();
         long end = start + 5*1000; // 60 seconds * 1000 ms/sec
-        while (System.currentTimeMillis() < end)
-        {
+        while (System.currentTimeMillis() < end) {
             try {
                 clidownload = new Socket("localhost", 4005);
-                //clidownload.setSoTimeout(5000);
                 bufferReader = new BufferedReader(new InputStreamReader(System.in));
                 // Thread.sleep(2000);
                 os = new PrintStream(clidownload.getOutputStream());
@@ -102,7 +107,7 @@ public class Client1
                 in = new ObjectInputStream(clidownload.getInputStream());
 
                 xyz = (ArrayList<String>) in.readObject();
-              //  System.out.println("XYZ SIZe="+xyz.size());
+                //  System.out.println("XYZ SIZe="+xyz.size());
 
                 for (i = 0; i < xyz.size(); i++) {
                     if (xyz.get(i).equalsIgnoreCase("1") && chunkcheck[i] == 0) {
@@ -113,6 +118,7 @@ public class Client1
                         chunkcheck[i] = 1;
                         mylist.set(i, "1");
                         receiveFile(temp, clidownload);
+                        downloadedchunkcount++;
                     }
                 }
                 os.println("exit");
@@ -122,12 +128,10 @@ public class Client1
             } catch (Exception e) {
                 System.out.println("Requesting Neighbor Client 5 to Connect in 2sec!");
                 // System.exit(1);
-            } finally {
-                 //
             }
-            //os = new PrintStream(clidownload.getOutputStream());
         }
-    }
+        }
+  //  }
 
     public static void actuploader() throws IOException {
         try {
@@ -137,8 +141,6 @@ public class Client1
             System.err.println("client 1 Port already in use.");
             System.exit(1);
         }
-        //long start = System.currentTimeMillis();
-
             try {
                 clientSocket = client1Socket.accept();
                 System.out.println("Conection Accept : " + clientSocket);
@@ -210,10 +212,7 @@ public class Client1
 
             System.out.println("File " + fileName + " received.");
         } catch (IOException ex) {
-          //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
-                 //   null, ex);
-        	//sysout
-     System.out.println("ERRORRR!");
+            System.out.println("ERRORRR!");
         	
         }
     }

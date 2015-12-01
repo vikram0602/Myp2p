@@ -2,18 +2,16 @@ package client2;
 
 
 
-import client1.Client1Connection;
+import merge.MergerFiles;
 
 import java.net.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 import java.util.ArrayList;
 
 
 
 
-// A client for our Multithreaded SocketServer.
+// A client 2 for our Multithreaded SocketServer.
 public class Client2
 {
     private static Socket socki;
@@ -28,7 +26,8 @@ public class Client2
     private static ObjectInputStream in;
     public static ArrayList<String> xyz;
     public static ArrayList<String> mylist ;
-
+    public static String recievefilename;
+    public static int downloadedchunkcount=0;
 
 
     public static void main(String[] args) throws IOException {
@@ -56,12 +55,15 @@ public class Client2
                     //os.println(fileName);
                     os.println("Client 2");
                     chunkcount=Integer.parseInt(br.readLine());
+                    recievefilename=br.readLine();
+                    System.out.println("Received File Name:"+recievefilename);
                     readNoChunk();
                     for(i=2;i<=chunkcount;i+=5)
                     {
                         receiveFile(fileName,socki);
                         chunkcheck[i-1]=1;
                         mylist.set(i-1,"1");
+                        downloadedchunkcount++;
                     }
                     break;
 
@@ -81,10 +83,20 @@ public class Client2
             //clidownload = new Socket("localhost", 4001);
             actdownloader();
             actuploader();
+            if(downloadedchunkcount==chunkcount)
+                merge_all();
+
+
         }
         socki.close();
     }
 
+    public static void merge_all() throws IOException {
+        String obc="src/client2/"+recievefilename;
+        MergerFiles mer=new MergerFiles();
+        mer.file_merge(chunkcount,obc);
+
+    }
     public static void actdownloader() throws IOException {
         int i,j;
         long start = System.currentTimeMillis();
@@ -113,6 +125,7 @@ public class Client2
                         chunkcheck[i]=1;
                         mylist.set(i,"1");
                         receiveFile(temp,clidownload);
+                        downloadedchunkcount++;
                     }
                 }
                os.println("exit");
@@ -122,11 +135,7 @@ public class Client2
                 System.out.println("Requesting Neighbor Client 1 to Connect in 2sec!");
                 // System.exit(1);
             }
-            finally {
-                 // clidownload.close();
             }
-            //os = new PrintStream(clidownload.getOutputStream());
-        }
 
     }
 
@@ -207,9 +216,6 @@ public class Client2
 
             System.out.println("File " + fileName + " received.");
         } catch (IOException ex) {
-            //  Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE,
-            //   null, ex);
-            //sysout
             System.out.println("ERRORRR!");
 
         }
